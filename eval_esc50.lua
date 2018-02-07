@@ -32,7 +32,7 @@ cmd:text()
 params = cmd:parse(arg)
 
 opt = {
-  data_root = 'ESC-50/',
+  data_root = '../datasets/ESC-50/',
   sound_length = 10, -- secs
   net = params['net'],
   layer = params['layer'],
