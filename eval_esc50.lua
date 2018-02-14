@@ -14,6 +14,7 @@ require 'nn'
 require 'cunn'
 require 'cudnn'
 require 'math'
+require 'optim'
 
 -- Commandline Arguments
 cmd = torch.CmdLine()
@@ -33,6 +34,7 @@ params = cmd:parse(arg)
 
 opt = {
   data_root = '../datasets/ESC-50/',
+  categories_file = '../datasets/ESC-50/categories.txt',
   sound_length = 10, -- secs
   net = params['net'],
   layer = params['layer'],
@@ -108,6 +110,16 @@ function read_dataset(file)
   return {dataset,labels}
 end
 
+function read_categories_file(file)
+   print('reading ' .. file)
+
+   local categories = {}
+   for line in io.lines(file) do table.insert(categories, line) end
+
+   return categories
+
+end
+
 function convert_to_liblinear(dataset)
   local ds = {}
   for i=1,dataset[1]:size(1) do
@@ -166,6 +178,13 @@ end
 accuracy = torch.mean(torch.eq(gt,pred_labels):type('torch.DoubleTensor'))
 print ('Accuracy:' .. accuracy)
 
+-- Confusion Matrix
+categories = read_categories_file(opt.categories_file)
+confusion = optim.ConfusionMatrix(categories)
+for i=1,test_count do
+   confusion:add(pred_labels[i], gt[i])
+end
+print(confusion)
 
 -- Append results to file
 file = io.open(opt.outfile, "a")
